@@ -1,9 +1,9 @@
 const express=require('express')
 const app=express()
 
-const bodyparser=require('body-parser')
+
 const router = require('./routes/routes')
- app.use(bodyparser.json())
+ app.use(express.json())
 
  const multer=require('multer');
  app.use(multer().any())
