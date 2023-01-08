@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AtifPervez/MyProject3.git"
+    "url": "https://github.com/bhuvi844964/project-3-Books-Management.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AtifPervez/MyProject3/issues"
+    "url": "https://github.com/bhuvi844964/project-3-Books-Management.git"
   },
-  "homepage": "https://github.com/AtifPervez/MyProject3#readme",
+  "homepage": "https://github.com/bhuvi844964/project-3-Books-Management.git",
   "dependencies": {
     "aws-sdk": "^2.1174.0",
     "body-parser": "^1.20.0",
