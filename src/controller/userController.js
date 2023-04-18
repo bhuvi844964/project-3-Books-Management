@@ -45,8 +45,6 @@ const createUser = async function (req, res) {
         if (!passRegex.test(password))  // --> password should be provided in right format
             return res.status(400).send({ status: false, message: "Password length should be alphanumeric with 8-15 characters, should contain at least one lowercase, one uppercase and one special character." })
 
-    
-
             if (data.address) {
             if (!isValidbody(data.address))return res.status(400).send({ status: false, message: "address can't be empty,Plz Enter the street, city and pincode in the address." })
             let c=0
