@@ -13,7 +13,7 @@ router.post("/login",loginAuthor)
 // ========================================Book================================================
 
 router.post('/aws',bookcover)
-router.post("/books",authentication,authorisation,createbook)
+router.post("/books",authorisation,createbook)
 router.get("/books",authentication,getBooks)
 router.get("/books/:bookId",authentication,getBooksById)
 router.put("/books/:bookId",authentication,authorisation,updatedetails)

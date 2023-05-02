@@ -1,6 +1,6 @@
 const express=require('express')
 const app=express()
-
+require('dotenv').config()
 
 const router = require('./routes/routes')
  app.use(express.json())
@@ -9,7 +9,7 @@ const router = require('./routes/routes')
  app.use(multer().any())
  
  const mongoose=require('mongoose')
- mongoose.connect("mongodb+srv://sharmaji232001:bhuvi844964@cluster0.a2txi.mongodb.net/book-management",
+ mongoose.connect(process.env.URL.toString(),
     {useNewUrlParser:true})
     .then(()=>console.log("mongoDB is Connected!!"))
     .catch(err=>console.log(err))

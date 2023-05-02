@@ -1,8 +1,32 @@
 const userModel = require("../models/userModel")
-const { isValid, isValidTitle,isValidbody, nameRegex, emailRegex, phoneRegex, passRegex,pinRegex,streetRegex } = require("../validator/validator")
+const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
-// const pinValidator = require('pincode-validator')
-const jwt=require("jsonwebtoken")
+const isValid = function (value) {
+    if (typeof value === 'undefined' || value === null) return false
+    if (typeof value === 'string' && value.trim().length === 0) return false
+    return true;
+}
+
+const isValidTitle = function (title) {
+    return ['Mr', 'Mrs', 'Miss'].indexOf(title) !== -1
+}
+
+const isValidbody=function(x){
+    return Object.keys(x).length>0
+}
+
+// Regex(s) used for the validation of different keys
+
+
+let nameRegex = /^(?:([A-Za-z]+\ \1)|([A-Za-z]))+$/
+let emailRegex = /^[a-z]{1}[a-z0-9._]{1,100}[@]{1}[a-z]{2,15}[.]{1}[a-z]{2,10}$/
+let phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/
+let passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,15}$/;
+let pinRegex = /^(\d{4}|\d{5}|\d{6})$/
+let streetRegex = /^(?:([A-Za-z0-9]+\-\1+[A-Za-z0-9/])|([A-Za-z0-9])|([A-Za-z]+\ \1+[A-Za-z0-9])|([([A-Za-z0-9]+\,\1+[A-Za-z0-9\s]))+$/
+
 
 
 const createUser = async function (req, res) {
@@ -11,9 +35,7 @@ const createUser = async function (req, res) {
         if (!isValidbody(data)) return res.status(400).send({ status: false, message: "Provide the data in request body." })
 
         let { title, name, phone, email, password } = data
-        let filter={ title, name, phone, email, password }
-
-    
+        
         if (!isValidTitle(title.trim()) ) 
             return res.status(400).send({ status: false, message: "Please enter the title ('Mr', 'Miss', 'Mrs'). " })
 
@@ -40,10 +62,23 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "Email is already in use, please enter a new one " });
         }
 
-        if (!isValid(password))  // --> password should be provided in the body
-            return res.status(400).send({ status: false, message: "Please enter the password. " })
-        if (!passRegex.test(password))  // --> password should be provided in right format
-            return res.status(400).send({ status: false, message: "Password length should be alphanumeric with 8-15 characters, should contain at least one lowercase, one uppercase and one special character." })
+        if (!passwordRegex.test(password)) {
+            return res
+              .status(400)
+              .send({
+                Status: false,
+                message:
+                  "Please provide valid AlphaNumeric password having min character 8 ",
+              });
+          }
+
+            const salt = await bcrypt.genSalt(saltRounds);
+
+            const hashPassword = await bcrypt.hash(password, salt);
+
+            let filter={ title, name, phone, email, password:hashPassword }
+
+
 
             if (data.address) {
             if (!isValidbody(data.address))return res.status(400).send({ status: false, message: "address can't be empty,Plz Enter the street, city and pincode in the address." })
@@ -78,40 +113,59 @@ const createUser = async function (req, res) {
 }
 
 
-const loginAuthor=async function(req,res){
-    try{
-    let data=req.body
-    if (!isValidbody(data)) {
-        return res.status(400).send({ status: false, message: "data not found,plz enter email & password" })
-    }
-      let{email,password}=data 
-      if (!isValid(email)) {
-        return res.status(400).send({ status: false, message: "plz enter email" })
-    }
-    if (!isValid(password)) {
-        return res.status(400).send({ status: false, message: "plz enter password" })
-    }
 
-    //email and password validation
-    if (!emailRegex.test(email)) {
-        return res.status(400).send({ status: false, message: "plz enter email in right format" })
-    }
-    if (!passRegex.test(password)) {
-        return res.status(400).send({ status: false, message: "plz enter valid password with atleast one uppercase and one lowercase and one charecter and one number" })
-    }
-      const getuserdata=await userModel.findOne({email,password})
-      if(!getuserdata){
-        return res.status(401).send({ status: false, message: "no data found with this email and password" })
-}
-      const token=jwt.sign({
-        userId:getuserdata._id
-      },"This-is-a-secret-key",{expiresIn:"12h"}) 
-      res.status(200).send({status:true,message:"login successful",token})
 
-    }catch(err){
-        res.status(500).send({ status: false, message: err.message })
 
+const loginAuthor = async function (req, res) {
+    try {
+      const { email, password } = req.body;
+  
+      if (!email || email === "") {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please provide email" });
+      }
+  
+      if (!password || password === "") {
+        return res
+          .status(400)
+          .send({ status: false, message: "Please provide password to login" });
+      }
+  
+      const author = await userModel.findOne({ email });
+  
+      if (!author) {
+        return res
+          .status(401)
+          .send({ status: false, message: "Email is incorrect" });
+      }
+  
+      const matchPassword = await bcrypt.compare(password, author.password);
+  
+      if (!matchPassword) {
+        return res
+          .status(401)
+          .send({ status: false, message: "Password is incorrect" });
+      }
+  
+      const token = jwt.sign({ authorId: author._id }, process.env.SECRET_KEY, {
+        expiresIn: "24h",
+      });
+  
+      res.status(201).send({
+        status: true,
+        message: "Login successful",
+        token,
+      });
+    } catch (error) {
+      res.status(500).send({ status: false, error: error.message });
     }
-}
+  };
+  
+
 
 module.exports = { createUser,loginAuthor}
+
+
+
+
