@@ -16,6 +16,12 @@ const router = require('./routes/routes')
 
     app.use('/',router)
 
+
+    app.use((err, req, res, next) => {
+        console.error(err.stack);
+        res.status(500).send("Oops, something went wrong.");
+      });
+
     app.listen(process.env.PORT||3000,()=>{
         console.log("server connected at Port :",process.env.PORT||3000)
     })
