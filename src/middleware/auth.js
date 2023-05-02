@@ -17,7 +17,7 @@ const authentication = (req, res, next) => {
 
         }
         let error = null
-        jwt.verify(token, "This-is-a-secret-key", function (err, decoded) {
+        jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
             if (err) error = err.message
             if(decoded) req.decodeTokeen=decoded
         })
